@@ -4,12 +4,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CartItem from "@/components/common/CartItem";
 import cookies from "@/utils/cookies";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  Search
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick-theme.css";
@@ -82,6 +77,32 @@ const DashboardPage = () => {
   const menuRef = useRef(null);
   const categoriesRef = useRef(null);
   const [userType, setUserType] = useState<string | null>(null);
+  // const [isCategorySliderSticky, setIsCategorySliderSticky] = useState(false);
+  // const offset = typeof window !== 'undefined' ? window.scrollY : 0;
+  // useEffect(() => {
+    
+  //   const handleSearchAndCategorySlider = () => {
+  //     // Get the vertical scroll position
+  //     console.log(offset, "offset");
+  //     setIsCategorySliderSticky(offset < 2); // Adjust "100" based on when it should stick
+  //   };
+
+  //   window.addEventListener("scroll", handleSearchAndCategorySlider);
+  //   // return () => window.removeEventListener("scroll", handleSearchAndCategorySlider);
+  // }, [offset]);
+  // console.log(isCategorySliderSticky, "isCategorySliderSticky");
+  
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+  
   const sliderSettings = {
     // dots: false,
     // infinite: true,
@@ -169,10 +190,12 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className="px-4 py-6">
-      <div className="grid grid-cols-8 gap-2 items-center h-[58px] bg-white shadow-lg p-2">
+    <>
+      <div className={`${
+        isScrolled ? "fixed top-[70px] left-0 right-0 pt-[3.75rem] pb-8 transition-all ease-in" : ""
+      } flex gap-16 items-center h-[70px] bg-white shadow-lg px-12 max-w-full z-40`}>
         {/* Search Bar */}
-        <div className="relative mb-6 max-w-full col-span-2">
+        <div className="relative mb-6 w-[20%]">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
             type="text"
@@ -180,85 +203,88 @@ const DashboardPage = () => {
             className="w-full pl-10 pr-4 py-2 h-8 rounded-full border border-gray-200 bg-gray-100 focus:outline-none"
           />
         </div>
-        <div></div>
         {/* Categories Slider */}
-        <div className="relative max-w-full col-span-5">
-          <div ref={categoriesRef} className="flex space-x-4 py-2 mb-6">
-            <div className="bg-white max-w-full">
-              <Slider {...sliderSettings}>
-                {categories.map((category) => (
-                  <div key={category.id} className="">
-                    <button
-                      id={`category-${category.id}`}
-                      onClick={() => scrollToCategory(category.id)}
-                      className={`flex items-center space-x-2  px-4 py-2 transition-all ${
-                        activeCategory === category.id
-                          ? "border-b-2 border-pink-500"
-                          : "text-gray-700 hover:bg-gray-200 rounded-md"
-                      }`}
-                    >
-                      <span>{category.name}</span>
-                      <span className="text-sm">({category.count})</span>
-                    </button>
-                  </div>
-                ))}
-              </Slider>
+        <div className="max-w-[70%] w-full flex-1">
+          <div className="relative max-w-full">
+            <div ref={categoriesRef} className="flex space-x-4 py-2 mb-6">
+              <div className="bg-white max-w-full">
+                <Slider {...sliderSettings}>
+                  {categories.map((category) => (
+                    <div key={category.id} className="">
+                      <button
+                        id={`category-${category.id}`}
+                        onClick={() => scrollToCategory(category.id)}
+                        className={`flex items-center space-x-2  px-4 py-2 transition-all ${
+                          activeCategory === category.id
+                            ? "border-b-2 border-pink-500"
+                            : "text-gray-700 hover:bg-gray-200 rounded-md"
+                        }`}
+                      >
+                        <span>{category.name}</span>
+                        <span className="text-sm">({category.count})</span>
+                      </button>
+                    </div>
+                  ))}
+                </Slider>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Menu Sections */}
-      <div ref={menuRef} className="space-y-8 mt-8">
-        {categories.map((category) => (
-          <section
-            key={category.id}
-            id={category.id}
-            className="menu-section space-y-4"
-          >
-            <h2 className="text-2xl font-bold flex items-center space-x-2">
-              <span>{category.name}</span>
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {menuItems
-                .filter((item) => item.category === category.id)
-                .map((item) => (
-                  <div
-                    key={item.id}
-                    className="bg-white border transition-transform duration-300 ease-in hover:scale-105 hover:bg-[#fdf2f7] rounded-xl shadow-sm p-4 flex gap-2 justify-between items-start"
-                  >
-                    <div className="space-y-1 box-border w-[75%]">
-                      <h2 className="text-lg font-semibold text-gray-900">
-                        {item.name}
-                      </h2>
-                      <div className="text-sm text-gray-600">from Tk 345</div>
-                      <p className="text-sm text-gray-500">
-                        {item.description}
-                      </p>
-                    </div>
+      <div className="px-4 py-6 lg:m-8 m-4">
+        {/* Menu Sections */}
+        <div ref={menuRef} className="space-y-8 mt-8">
+          {categories.map((category) => (
+            <section
+              key={category.id}
+              id={category.id}
+              className="menu-section space-y-4"
+            >
+              <h2 className="text-2xl font-bold flex items-center space-x-2">
+                <span>{category.name}</span>
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {menuItems
+                  .filter((item) => item.category === category.id)
+                  .map((item) => (
+                    <div
+                      key={item.id}
+                      className="bg-white border transition-transform duration-300 ease-in hover:scale-105 hover:bg-[#fdf2f7] rounded-xl shadow-sm p-4 flex gap-2 justify-between items-start"
+                    >
+                      <div className="space-y-1 box-border w-[75%]">
+                        <h2 className="text-lg font-semibold text-gray-900">
+                          {item.name}
+                        </h2>
+                        <div className="text-sm text-gray-600">from Tk 345</div>
+                        <p className="text-sm text-gray-500">
+                          {item.description}
+                        </p>
+                      </div>
 
-                    <div className="relative box-border w-[25%]">
-                      <img
-                        src={Pizza.src}
-                        alt="Kebab Cocktail Pizza"
-                        className="w-24 h-24 rounded-lg object-cover"
-                      />
-                      <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-white text-sm">
-                        <Plus />
+                      <div className="relative box-border w-[25%]">
+                        <img
+                          src={Pizza.src}
+                          alt="Kebab Cocktail Pizza"
+                          className="w-24 h-24 rounded-lg object-cover"
+                        />
+                        <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-white text-sm">
+                          <Plus />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-            </div>
-          </section>
-        ))}
-      </div>
+                  ))}
+              </div>
+            </section>
+          ))}
+        </div>
 
-      {/* Cart Preview */}
-      <div className="fixed bottom-6 right-6">
-        <CartItem/>
+        {/* Cart Preview */}
+        <div className="fixed bottom-6 right-6">
+          <CartItem />
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

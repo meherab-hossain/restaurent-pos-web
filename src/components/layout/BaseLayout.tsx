@@ -13,7 +13,7 @@ export default function AdminLayout({ children }:any) {
   return (
     <div className="min-h-screen bg-white">
       <Header toggleSidebar={toggleSidebar} />
-      <main className="flex-1 py-8 lg:m-8 m-4">{children}</main>
+      <main className="flex-1 pt-24 pb-8">{children}</main>
     </div>
   );
 }

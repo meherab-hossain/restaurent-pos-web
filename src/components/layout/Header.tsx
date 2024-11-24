@@ -16,7 +16,7 @@ import Link from 'next/link';
 
 const Header = () => {
   return (
-    <nav className="w-full px-4 py-3 flex items-center justify-between border-b border-gray-200 bg-white">
+    <nav className="fixed z-50 top-0 left-0 right-0 w-full px-4 py-3 flex items-center justify-between border-b border-gray-200 bg-white">
       {/* Left section - Logo */}
       <Link href="/" className="flex items-center">
         <div className="relative w-8 h-12">
