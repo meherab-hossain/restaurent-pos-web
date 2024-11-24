@@ -14,46 +14,6 @@ import Pizza from "./../../../public/images/pizza.jpg";
 interface CustomArrowProps {
   [key: string]: any;
 }
-
-// const NextArrow = (props:any) => {
-//   const { className, onClick } = props;
-//   return (
-//     <div
-//       className={`${className} custom-arrow`}
-//       onClick={onClick}
-//       style={{
-//         display: "block",
-//         background: "blue",
-//         borderRadius: "50%",
-//         padding: "10px",
-//         color: "white",
-//         fontSize: "20px",
-//       }}
-//     >
-//      <ChevronRight className="text-blue-800" size={24} />
-//     </div>
-//   );
-// };
-
-// const PrevArrow = (props:any) => {
-//   const { className, onClick } = props;
-//   return (
-//     <div
-//       className={`${className} custom-arrow`}
-//       onClick={onClick}
-//       style={{
-//         display: "block",
-//         background: "red",
-//         borderRadius: "50%",
-//         padding: "10px",
-//         color: "white",
-//         fontSize: "20px",
-//       }}
-//     >
-//       <ChevronLeft className="text-blue-800" size={24} />
-//     </div>
-//   );
-// };
 const NextArrow = ({ onClick }: any) => (
   <div
     onClick={onClick}
@@ -77,32 +37,19 @@ const DashboardPage = () => {
   const menuRef = useRef(null);
   const categoriesRef = useRef(null);
   const [userType, setUserType] = useState<string | null>(null);
-  // const [isCategorySliderSticky, setIsCategorySliderSticky] = useState(false);
-  // const offset = typeof window !== 'undefined' ? window.scrollY : 0;
-  // useEffect(() => {
-    
-  //   const handleSearchAndCategorySlider = () => {
-  //     // Get the vertical scroll position
-  //     console.log(offset, "offset");
-  //     setIsCategorySliderSticky(offset < 2); // Adjust "100" based on when it should stick
-  //   };
 
-  //   window.addEventListener("scroll", handleSearchAndCategorySlider);
-  //   // return () => window.removeEventListener("scroll", handleSearchAndCategorySlider);
-  // }, [offset]);
-  // console.log(isCategorySliderSticky, "isCategorySliderSticky");
-  
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isProgrammaticScroll, setIsProgrammaticScroll] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0);
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-  
+
   const sliderSettings = {
     // dots: false,
     // infinite: true,
@@ -146,54 +93,130 @@ const DashboardPage = () => {
       description: "Big Big Sausage, Mushroom, Spice.",
       category: "popular",
     },
+    {
+      id: 3,
+      name: "BBQ Meat Machine Pizza",
+      price: 335,
+      description:
+        "Topped with beef & chicken both with freshly cut vegetables, cheese & in a...",
+      category: "combo",
+    },
+    {
+      id: 4,
+      name: "Sausage Carnival Pizza",
+      price: 335,
+      description: "Big Big Sausage, Mushroom, Spice.",
+      category: "pizza",
+    },
+    {
+      id: 5,
+      name: "BBQ Meat Machine Pizza",
+      price: 335,
+      description:
+        "Topped with beef & chicken both with freshly cut vegetables, cheese & in a...",
+      category: "burger",
+    },
+    {
+      id: 6,
+      name: "Sausage Carnival Pizza",
+      price: 335,
+      description: "Big Big Sausage, Mushroom, Spice.",
+      category: "snacks",
+    },
     // Add more menu items here
   ];
 
-  const handleScroll = () => {
-    if (menuRef.current) {
-      const sections = menuRef.current.getElementsByClassName("menu-section");
-      let currentSection = "";
-
-      Array.from(sections).forEach((section) => {
-        const rect = section.getBoundingClientRect();
-        if (rect.top <= 100) {
-          currentSection = section.id;
-        }
-      });
-
-      if (currentSection) {
-        setActiveCategory(currentSection);
-        const categoryElement = document.getElementById(
-          `category-${currentSection}`
-        );
-        if (categoryElement && categoriesRef.current) {
-          categoriesRef.current.scrollTo({
-            left: categoryElement.offsetLeft - 100,
-            behavior: "smooth",
-          });
-        }
+  const scrollToCategory = (categoryId: string) => {
+    const section = document.getElementById(categoryId);
+  
+    if (section) {
+      const title = section.querySelector("h2");
+      if (title) {
+        const rect = title.getBoundingClientRect();
+        const headerHeight = 70; // Adjust based on your fixed header
+        const categoryMenuHeight = 95; // Space above the category title
+        const offset = window.scrollY + rect.top - headerHeight - categoryMenuHeight;
+  
+        setIsProgrammaticScroll(true); // Disable scroll detection temporarily
+  
+        window.scrollTo({
+          top: offset,
+          behavior: "smooth",
+        });
+  
+        setTimeout(() => {
+          setIsProgrammaticScroll(false); // Re-enable scroll detection
+        }, 500); // Match smooth scroll duration
+  
+        setActiveCategory(categoryId);
       }
     }
   };
+  
+  
+
+  const handleScroll = () => {
+    if (isProgrammaticScroll) return; // Skip during programmatic scrolls
+  
+    if (menuRef.current) {
+          const sections = menuRef.current.getElementsByClassName("menu-section");
+          let currentSection = "";
+          let closestSection = "";
+          let closestDistance = Infinity;
+    
+          Array.from(sections).forEach((section) => {
+            const rect = section.getBoundingClientRect();
+    
+            // Check if the section's top is within the visible area
+            if (rect.top >= 0 && rect.top <= 150) {
+              currentSection = section.id;
+            }
+    
+            // Find the section closest to the top of the viewport
+            const distance = Math.abs(rect.top);
+            if (distance < closestDistance) {
+              closestSection = section.id;
+              closestDistance = distance;
+            }
+          });
+    
+          // Use the closest section if no section is fully visible
+          if (!currentSection) {
+            currentSection = closestSection;
+          }
+    
+          if (currentSection) {
+            setActiveCategory(currentSection);
+    
+            const categoryElement = document.getElementById(`category-${currentSection}`);
+            if (categoryElement && categoriesRef.current) {
+              categoryElement.scrollIntoView({
+                behavior: "smooth",
+                inline: "center",
+              });
+            }
+          }
+        }
+  };
+  
+  
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const scrollToCategory = (categoryId) => {
-    const element = document.getElementById(categoryId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-    setActiveCategory(categoryId);
-  };
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [isProgrammaticScroll]);
 
   return (
     <>
-      <div className={`${
-        isScrolled ? "fixed top-[70px] left-0 right-0 pt-[3.75rem] pb-8 transition-all ease-in" : ""
-      } flex gap-16 items-center h-[70px] bg-white shadow-lg px-12 max-w-full z-40`}>
+      <div
+        className={`${
+          isScrolled
+            ? "fixed top-[70px] left-0 right-0 pt-[3rem] pb-8 transition-all ease-in"
+            : ""
+        } flex gap-16 items-center h-[70px] bg-white shadow-lg px-12 max-w-full z-40`}
+      >
         {/* Search Bar */}
         <div className="relative mb-6 w-[20%]">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -214,9 +237,9 @@ const DashboardPage = () => {
                       <button
                         id={`category-${category.id}`}
                         onClick={() => scrollToCategory(category.id)}
-                        className={`flex items-center space-x-2  px-4 py-2 transition-all ${
+                        className={`flex items-center space-x-2 px-4 py-2 transition-all ${
                           activeCategory === category.id
-                            ? "border-b-2 border-pink-500"
+                            ? "border-b-2 border-pink-500 text-pink-500"
                             : "text-gray-700 hover:bg-gray-200 rounded-md"
                         }`}
                       >
