@@ -12,7 +12,6 @@ import "slick-carousel/slick/slick.css";
 import FriendHoc from "../../../nextjs-friend";
 import Pizza from "./../../../public/images/pizza.jpg";
 
-
 const DashboardPage = () => {
   const [activeCategory, setActiveCategory] = useState("Popular");
   const [cart, setCart] = useState([]);
@@ -32,7 +31,6 @@ const DashboardPage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  
   useEffect(() => {
     const userTypeFromCookie = cookies.get("user_type");
     setUserType(userTypeFromCookie);
@@ -101,78 +99,77 @@ const DashboardPage = () => {
 
   const scrollToCategory = (categoryId: string) => {
     const section = document.getElementById(categoryId);
-  
+
     if (section) {
       const title = section.querySelector("h2");
       if (title) {
         const rect = title.getBoundingClientRect();
         const headerHeight = 70; // Adjust based on your fixed header
         const categoryMenuHeight = 95; // Space above the category title
-        const offset = window.scrollY + rect.top - headerHeight - categoryMenuHeight;
-  
+        const offset =
+          window.scrollY + rect.top - headerHeight - categoryMenuHeight;
+
         setIsProgrammaticScroll(true); // Disable scroll detection temporarily
-  
+
         window.scrollTo({
           top: offset,
           behavior: "smooth",
         });
-  
+
         setTimeout(() => {
           setIsProgrammaticScroll(false); // Re-enable scroll detection
         }, 500); // Match smooth scroll duration
-  
+
         setActiveCategory(categoryId);
       }
     }
   };
-  
-  
 
   const handleScroll = () => {
     if (isProgrammaticScroll) return; // Skip during programmatic scrolls
-  
+
     if (menuRef.current) {
-          const sections = menuRef.current.getElementsByClassName("menu-section");
-          let currentSection = "";
-          let closestSection = "";
-          let closestDistance = Infinity;
-    
-          Array.from(sections).forEach((section) => {
-            const rect = section.getBoundingClientRect();
-    
-            // Check if the section's top is within the visible area
-            if (rect.top >= 0 && rect.top <= 150) {
-              currentSection = section.id;
-            }
-    
-            // Find the section closest to the top of the viewport
-            const distance = Math.abs(rect.top);
-            if (distance < closestDistance) {
-              closestSection = section.id;
-              closestDistance = distance;
-            }
-          });
-    
-          // Use the closest section if no section is fully visible
-          if (!currentSection) {
-            currentSection = closestSection;
-          }
-    
-          if (currentSection) {
-            setActiveCategory(currentSection);
-    
-            const categoryElement = document.getElementById(`category-${currentSection}`);
-            if (categoryElement && categoriesRef.current) {
-              categoryElement.scrollIntoView({
-                behavior: "smooth",
-                inline: "center",
-              });
-            }
-          }
+      const sections = menuRef.current.getElementsByClassName("menu-section");
+      let currentSection = "";
+      let closestSection = "";
+      let closestDistance = Infinity;
+
+      Array.from(sections).forEach((section) => {
+        const rect = section.getBoundingClientRect();
+
+        // Check if the section's top is within the visible area
+        if (rect.top >= 0 && rect.top <= 150) {
+          currentSection = section.id;
         }
+
+        // Find the section closest to the top of the viewport
+        const distance = Math.abs(rect.top);
+        if (distance < closestDistance) {
+          closestSection = section.id;
+          closestDistance = distance;
+        }
+      });
+
+      // Use the closest section if no section is fully visible
+      if (!currentSection) {
+        currentSection = closestSection;
+      }
+
+      if (currentSection) {
+        setActiveCategory(currentSection);
+
+        const categoryElement = document.getElementById(
+          `category-${currentSection}`
+        );
+        if (categoryElement && categoriesRef.current) {
+          categoryElement.scrollIntoView({
+            behavior: "smooth",
+            inline: "center",
+          });
+        }
+      }
+    }
   };
-  
-  
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
@@ -203,12 +200,11 @@ const DashboardPage = () => {
         <div className="max-w-[70%] w-full flex-1">
           <div className="relative max-w-full">
             <div ref={categoriesRef} className="flex space-x-4 py-2 mb-6">
-            <CategoriesSlider
-          categories={categories}
-          activeCategory={activeCategory}
-          scrollToCategory={scrollToCategory}
-        />
-              
+              <CategoriesSlider
+                categories={categories}
+                activeCategory={activeCategory}
+                scrollToCategory={scrollToCategory}
+              />
             </div>
           </div>
         </div>
