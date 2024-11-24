@@ -2,35 +2,17 @@
 /* eslint-disable react/jsx-no-undef */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import CategoriesSlider from "@/components/CategoriesSlider";
 import CartItem from "@/components/common/CartItem";
 import cookies from "@/utils/cookies";
-import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import Slider from "react-slick";
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
 import FriendHoc from "../../../nextjs-friend";
 import Pizza from "./../../../public/images/pizza.jpg";
-interface CustomArrowProps {
-  [key: string]: any;
-}
-const NextArrow = ({ onClick }: any) => (
-  <div
-    onClick={onClick}
-    className="absolute -right-[45px] top-1/2 transform -translate-y-1/2 transition-all ease-in border hover:scale-110 hover:bg-gray-100 bg-white-500 text-black rounded-full p-2 cursor-pointer shadow-lg"
-  >
-    <ChevronRight className="text-black" size={24} />
-  </div>
-);
 
-const PrevArrow = ({ onClick }: any) => (
-  <div
-    onClick={onClick}
-    className="absolute -left-[45px] top-1/2 transform -translate-y-1/2 transition-all ease-in border hover:scale-110 hover:bg-gray-100 bg-white text-black rounded-full p-2 cursor-pointer shadow-lg"
-  >
-    <ChevronLeft className="text-black" size={24} />
-  </div>
-);
+
 const DashboardPage = () => {
   const [activeCategory, setActiveCategory] = useState("Popular");
   const [cart, setCart] = useState([]);
@@ -50,16 +32,7 @@ const DashboardPage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const sliderSettings = {
-    // dots: false,
-    // infinite: true,
-    // arrows: false,
-    speed: 500,
-    slidesToShow: 7,
-    slidesToScroll: 1,
-    nextArrow: <NextArrow to="next" />,
-    prevArrow: <PrevArrow to="prev" />,
-  };
+  
   useEffect(() => {
     const userTypeFromCookie = cookies.get("user_type");
     setUserType(userTypeFromCookie);
@@ -230,26 +203,12 @@ const DashboardPage = () => {
         <div className="max-w-[70%] w-full flex-1">
           <div className="relative max-w-full">
             <div ref={categoriesRef} className="flex space-x-4 py-2 mb-6">
-              <div className="bg-white max-w-full">
-                <Slider {...sliderSettings}>
-                  {categories.map((category) => (
-                    <div key={category.id} className="">
-                      <button
-                        id={`category-${category.id}`}
-                        onClick={() => scrollToCategory(category.id)}
-                        className={`flex items-center space-x-2 px-4 py-2 transition-all ${
-                          activeCategory === category.id
-                            ? "border-b-2 border-pink-500 text-pink-500"
-                            : "text-gray-700 hover:bg-gray-200 rounded-md"
-                        }`}
-                      >
-                        <span>{category.name}</span>
-                        <span className="text-sm">({category.count})</span>
-                      </button>
-                    </div>
-                  ))}
-                </Slider>
-              </div>
+            <CategoriesSlider
+          categories={categories}
+          activeCategory={activeCategory}
+          scrollToCategory={scrollToCategory}
+        />
+              
             </div>
           </div>
         </div>
