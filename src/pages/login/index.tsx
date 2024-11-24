@@ -2,6 +2,7 @@
 import LogoHeader from "@/components/common/LogoHeader";
 import { yupResolver } from "@hookform/resolvers/yup";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useForm } from "react-hook-form";
 import LoginSchema from "../../utils/yup/LoginSchema";
 
@@ -11,6 +12,7 @@ interface LoginFormData {
 }
 
 const LoginPage = () => {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -32,9 +34,9 @@ const LoginPage = () => {
 
       // Reset form after successful submission
       reset();
-
+      router.push("/dashboard");
       // Show success message (you might want to handle this with a toast notification)
-      alert("Login successfully!");
+      // alert("Login successfully!");
     } catch (error) {
       console.error("Error submitting form:", error);
       alert("Error submitting form. Please try again.");

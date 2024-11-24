@@ -11,9 +11,9 @@ export default function AdminLayout({ children }:any) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-white">
       <Header toggleSidebar={toggleSidebar} />
-      <main className="flex-1 p-4 lg:ml-64 mt-14">{children}</main>
+      <main className="flex-1 py-8 lg:m-8 m-4">{children}</main>
     </div>
   );
 }
