@@ -2,7 +2,7 @@ import { Plus, Trash } from 'lucide-react';
 
 const CartItem = () => {
   return (
-    <div className="max-w-md mx-auto bg-white p-4 space-y-6 border rounded-md h-[calc(100vh-250px)]">
+    <div className="max-w-md mx-auto bg-white p-4 space-y-2 border rounded-md h-[calc(100vh-250px)]">
       {/* Delivery Options */}
       {/* <div className="flex gap-4">
         <button className="px-4 py-2 bg-pink-50 rounded-lg">

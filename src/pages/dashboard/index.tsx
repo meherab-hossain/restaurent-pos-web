@@ -15,7 +15,7 @@ import Pizza from "./../../../public/images/pizza.jpg";
 const DashboardPage = () => {
   const [activeCategory, setActiveCategory] = useState("Popular");
   const [cart, setCart] = useState([]);
-  const menuRef = useRef(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const categoriesRef = useRef(null);
   const [userType, setUserType] = useState<string | null>(null);
 
@@ -129,7 +129,7 @@ const DashboardPage = () => {
     if (isProgrammaticScroll) return; // Skip during programmatic scrolls
 
     if (menuRef.current) {
-      const sections = menuRef.current.getElementsByClassName("menu-section");
+      const sections = menuRef?.current?.getElementsByClassName("menu-section");
       let currentSection = "";
       let closestSection = "";
       let closestDistance = Infinity;
@@ -183,7 +183,7 @@ const DashboardPage = () => {
       <div
         className={`${
           isScrolled
-            ? "fixed top-[70px] left-0 right-0 pt-[3rem] pb-8 transition-all ease-in"
+            ? "fixed top-[70px] left-0 right-0 pt-[1rem] transition-all ease-in"
             : ""
         } flex gap-16 items-center h-[70px] bg-white shadow-lg px-12 max-w-full z-40`}
       >
