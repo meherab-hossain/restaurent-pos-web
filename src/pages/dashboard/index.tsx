@@ -4,7 +4,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CategoriesSlider from "@/components/CategoriesSlider";
 import CartItem from "@/components/common/CartItem";
+import MenuItemSelectModal from "@/components/MenuItemSelectModal";
+import { MODAL_NAMES } from "@/utils/constants";
 import cookies from "@/utils/cookies";
+import { useModalManager } from "@/utils/modal/useModalManager";
 import { Plus, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import "slick-carousel/slick/slick-theme.css";
@@ -22,6 +25,8 @@ const DashboardPage = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isProgrammaticScroll, setIsProgrammaticScroll] = useState(false);
 
+  // modal states
+  const { modals, openModal, closeModal } = useModalManager(Object.values(MODAL_NAMES));
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0);
@@ -180,6 +185,12 @@ const DashboardPage = () => {
 
   return (
     <>
+      <MenuItemSelectModal 
+        modalStatus={modals[MODAL_NAMES.PRODUCT_ENTRY].isOpen}
+        data={modals[MODAL_NAMES.PRODUCT_ENTRY].data}
+        modalOnClose={() => closeModal(MODAL_NAMES.PRODUCT_ENTRY)}
+        // modalOnEmit={handleProductSubmit}
+      />
       <div
         className={`${
           isScrolled
@@ -218,6 +229,7 @@ const DashboardPage = () => {
               key={category.id}
               id={category.id}
               className="menu-section space-y-4"
+              onClick={() => openModal(MODAL_NAMES.PRODUCT_ENTRY)}
             >
               <h2 className="text-2xl font-bold flex items-center space-x-2">
                 <span>{category.name}</span>
