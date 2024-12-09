@@ -1,10 +1,11 @@
 // store/store.ts
 import { configureStore } from '@reduxjs/toolkit';
+import menuReducer from './feature/menuSlice';
 import userRegistrationReducer from './feature/userRegistrationSlice';
-
 const store = configureStore({
   reducer: {
     userRegistration: userRegistrationReducer,
+    menu: menuReducer,
   },
 });
 

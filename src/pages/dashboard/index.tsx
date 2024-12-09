@@ -5,8 +5,11 @@
 import CategoriesSlider from "@/components/CategoriesSlider";
 import CartItem from "@/components/common/CartItem";
 import MenuItemSelectModal from "@/components/MenuItemSelectModal";
+import { setCategories } from "@/store/feature/menuSlice";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { MODAL_NAMES } from "@/utils/constants";
 import cookies from "@/utils/cookies";
+import { http } from "@/utils/http";
 import { useModalManager } from "@/utils/modal/useModalManager";
 import { Plus, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -16,7 +19,8 @@ import FriendHoc from "../../../nextjs-friend";
 import Pizza from "./../../../public/images/pizza.jpg";
 
 const DashboardPage = () => {
-  const [activeCategory, setActiveCategory] = useState("Popular");
+  const categoriesData = useAppSelector((state) => state.menu.categories);
+  const [activeCategory, setActiveCategory] = useState<number | null>(null);
   const [cart, setCart] = useState([]);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const categoriesRef = useRef(null);
@@ -26,7 +30,11 @@ const DashboardPage = () => {
   const [isProgrammaticScroll, setIsProgrammaticScroll] = useState(false);
 
   // modal states
-  const { modals, openModal, closeModal } = useModalManager(Object.values(MODAL_NAMES));
+  const { modals, openModal, closeModal } = useModalManager(
+    Object.values(MODAL_NAMES)
+  );
+  const dispatch = useAppDispatch();
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0);
@@ -40,6 +48,24 @@ const DashboardPage = () => {
     const userTypeFromCookie = cookies.get("user_type");
     setUserType(userTypeFromCookie);
   }, []);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [dispatch]);
+
+  function fetchCategories() {
+    const includeParams =
+      "include=menu_items,addons,variants,addon.variations,total_menu_items_count";
+    http
+      .get(`/category?${includeParams}`)
+      .then((res) => {
+        dispatch(setCategories(res?.data?.data));
+        setActiveCategory(res?.data?.data[0]?.id);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
 
   const categories = [
     { id: "popular", name: "Popular", count: 6 },
@@ -101,10 +127,8 @@ const DashboardPage = () => {
     },
     // Add more menu items here
   ];
-
-  const scrollToCategory = (categoryId: string) => {
-    const section = document.getElementById(categoryId);
-
+  const scrollToCategory = (categoryId: number) => {
+    const section = document.getElementById(categoryId.toString());
     if (section) {
       const title = section.querySelector("h2");
       if (title) {
@@ -161,7 +185,7 @@ const DashboardPage = () => {
       }
 
       if (currentSection) {
-        setActiveCategory(currentSection);
+        setActiveCategory(Number(currentSection));
 
         const categoryElement = document.getElementById(
           `category-${currentSection}`
@@ -185,7 +209,7 @@ const DashboardPage = () => {
 
   return (
     <>
-      <MenuItemSelectModal 
+      <MenuItemSelectModal
         modalStatus={modals[MODAL_NAMES.PRODUCT_ENTRY].isOpen}
         data={modals[MODAL_NAMES.PRODUCT_ENTRY].data}
         modalOnClose={() => closeModal(MODAL_NAMES.PRODUCT_ENTRY)}
@@ -208,15 +232,17 @@ const DashboardPage = () => {
           />
         </div>
         {/* Categories Slider */}
-        <div className="max-w-[70%] w-full flex-1">
+        <div className="max-w-[70%] w-full">
           <div className="relative max-w-full">
-            <div ref={categoriesRef} className="flex space-x-4 py-2 mb-6">
-              <CategoriesSlider
-                categories={categories}
-                activeCategory={activeCategory}
-                scrollToCategory={scrollToCategory}
-              />
-            </div>
+            {categoriesData.length > 0 && (
+              <div ref={categoriesRef} className="flex gap-3 py-2 mb-6">
+                <CategoriesSlider
+                  categories={categoriesData}
+                  activeCategory={activeCategory}
+                  scrollToCategory={scrollToCategory}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -224,31 +250,31 @@ const DashboardPage = () => {
       <div className="px-4 py-6 lg:m-8 m-4">
         {/* Menu Sections */}
         <div ref={menuRef} className="space-y-8 mt-8">
-          {categories.map((category) => (
+          {categoriesData.map((category) => (
             <section
-              key={category.id}
-              id={category.id}
+              key={category?.id}
+              id={category?.id}
               className="menu-section space-y-4"
               onClick={() => openModal(MODAL_NAMES.PRODUCT_ENTRY)}
             >
               <h2 className="text-2xl font-bold flex items-center space-x-2">
-                <span>{category.name}</span>
+                <span>{category?.name}</span>
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {menuItems
-                  .filter((item) => item.category === category.id)
-                  .map((item) => (
+                {category?.menu_items
+                  .filter((item:any) => item?.category_id === category?.id)
+                  .map((item:any) => (
                     <div
-                      key={item.id}
+                      key={item?.id}
                       className="bg-white border transition-transform duration-300 ease-in hover:scale-105 hover:bg-[#fdf2f7] rounded-xl shadow-sm p-4 flex gap-2 justify-between items-start"
                     >
                       <div className="space-y-1 box-border w-[75%]">
                         <h2 className="text-lg font-semibold text-gray-900">
-                          {item.name}
+                          {item?.name}
                         </h2>
-                        <div className="text-sm text-gray-600">from Tk 345</div>
+                        <div className="text-sm text-gray-600">from Tk {item?.price}</div>
                         <p className="text-sm text-gray-500">
-                          {item.description}
+                          {item?.description}
                         </p>
                       </div>
 
