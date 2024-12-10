@@ -25,8 +25,8 @@ const CartItem = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-4 space-y-2 border rounded-md h-[calc(100vh-250px)]">
-      <div className="h-[calc(100%-150px)] overflow-y-auto">
+    <div className="max-w-lg mx-auto bg-white p-4 space-y-2 border rounded-md h-[calc(100vh-230px)]">
+      <div className="h-[calc(100%-120px)] overflow-y-auto">
         <h2 className="text-xl font-semibold mb-4">Your items</h2>
         
         <div className="space-y-4">
@@ -64,6 +64,7 @@ const CartItem = () => {
         </div>
       </div>
 
+      <div className="flex flex-col justify-end">
       <div className="border-t pt-4">
         <div className="flex justify-between items-center mb-2">
           <div className="text-lg font-medium">Total</div>
@@ -71,9 +72,10 @@ const CartItem = () => {
         </div>
       </div>
 
-      <button className="w-full bg-pink-600 text-white py-4 rounded-lg hover:bg-pink-700 transition-colors">
+      <button className="w-full bg-pink-600 text-white px-2 py-4 rounded-lg hover:bg-pink-700 transition-colors">
         Review payment and address
       </button>
+      </div>
     </div>
   );
 };

@@ -250,17 +250,17 @@ const DashboardPage = () => {
 
       <div className="px-4 py-6 lg:m-8 m-4">
         {/* Menu Sections */}
-        <div ref={menuRef} className="space-y-8 mt-8">
+        <div ref={menuRef} className="space-y-8 mt-8 w-full lg:w-[73%]">
           {categoriesData.map((category) => (
             <section
               key={category?.id}
               id={category?.id}
-              className="menu-section space-y-4"
+              className="menu-section space-y-4 w-full"
             >
               <h2 className="text-2xl font-bold flex items-center space-x-2">
                 <span>{category?.name}</span>
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
                 {category?.menu_items
                   .filter((item:any) => item?.category_id === category?.id)
                   .map((item:any) => (
@@ -302,7 +302,7 @@ const DashboardPage = () => {
         </div>
 
         {/* Cart Preview */}
-        <div className="fixed bottom-6 right-6">
+        <div className="mt-8 lg:mt-0 lg:fixed lg:bottom-6 lg:right-6 w-full lg:w-[23%]">
           <CartItem />
         </div>
       </div>
