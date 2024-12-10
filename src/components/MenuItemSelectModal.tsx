@@ -1,40 +1,21 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { addToCart } from '@/store/feature/menuSlice';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { X } from "lucide-react";
 import Image from "next/image";
-import * as yup from "yup";
+import { useEffect, useState } from 'react';
 import FrequentlyBrought from "./FrequentlyBrought";
 import MenuItemAddOns from "./MenuItemAddOns";
 import MenuItemVarients from "./MenuItemVarients";
 
-interface ProductFormData {
-  name: string;
-  price: number;
-  category: string;
-  description: string;
-  stock: number;
-  image?: File;
-}
-
-const productEntrySchema = yup.object().shape({
-  name: yup.string().required("Product name is required"),
-  price: yup
-    .number()
-    .required("Price is required")
-    .min(0, "Price must be greater than 0"),
-  category: yup.string().required("Category is required"),
-  description: yup.string().required("Description is required"),
-  stock: yup
-    .number()
-    .required("Stock quantity is required")
-    .min(0, "Stock must be at least 0"),
-});
 
 interface ModalProps {
   modalStatus: boolean;
   data?: any;
   modalOnClose: () => void;
-  modalOnEmit?: (data: ProductFormData) => Promise<void>;
+  modalOnEmit?: (data: any) => Promise<void>;
 }
 
 const MenuItemSelectModal = ({
@@ -42,8 +23,26 @@ const MenuItemSelectModal = ({
   data,
   modalOnClose,
 }: ModalProps) => {
-  const handleFormSubmit = async (formData: ProductFormData) => {
-    console.log(formData);
+  const dispatch = useAppDispatch();
+  const [quantity, setQuantity] = useState(1);
+
+  const menuItem = useAppSelector((state) => state.menu.cart);
+
+  // Add useEffect to reset quantity when modal opens/closes
+  useEffect(() => {
+    if (!modalStatus) {
+      // Reset quantity when modal closes
+      setQuantity(1);
+    }
+  }, [modalStatus]);
+  const handleAddToCart = () => {
+    dispatch(addToCart({
+      menu_item_id: data.id,
+      quantity: quantity,
+      addons: [],
+      variant_id: 0
+    }));
+    modalOnClose();
   };
 
   return (
@@ -53,7 +52,7 @@ const MenuItemSelectModal = ({
           <DialogPanel className="relative w-full max-w-xl rounded-xl bg-white shadow-xl">
             <div className="flex items-center justify-between shadow-sm px-6 py-4">
               <DialogTitle className="text-lg font-semibold text-gray-900">
-                {data?.id ? "Edit Product" : "Add New Product"}
+                {"Add New Product"}
               </DialogTitle>
               <button
                 onClick={modalOnClose}
@@ -75,10 +74,10 @@ const MenuItemSelectModal = ({
                   />
                 </div>
 
-                <h1 className="text-2xl font-bold mb-2">Massey Onion Pizza</h1>
-                <p className="text-xl text-gray-700 mb-6">₹5,250</p>
+                <h1 className="text-2xl font-bold mb-2">{data?.name}</h1>
+                <p className="text-xl text-gray-700 mb-6">₹{data?.price}</p>
                 {/*  menue variants */}
-                <MenuItemVarients />
+                <MenuItemVarients varients={data?.varients}/>
 
                 {/* Add ons */}
                 <MenuItemAddOns />
@@ -114,20 +113,24 @@ const MenuItemSelectModal = ({
               <div className="flex justify-end gap-3 shadow px-6 py-4">
                 <div className="flex items-center border border-gray-300 rounded-lg">
                   <button
-                    // onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    onClick={() => setQuantity((prev) => prev - 1)}
+                    disabled={quantity <= 1}
                     className="px-4 py-2 text-gray-600 hover:bg-gray-100"
                   >
                     -
                   </button>
-                  <span className="px-4 py-2">1</span>
+                  <span className="px-4 py-2">{quantity}</span>
                   <button
-                    // onClick={() => setQuantity(quantity + 1)}
+                    onClick={() => setQuantity((prev) => prev + 1)}
                     className="px-4 py-2 text-gray-600 hover:bg-gray-100"
                   >
                     +
                   </button>
                 </div>
-                <button className="flex-1 bg-pink-500 text-white py-3 px-6 rounded-lg hover:bg-pink-600 transition-colors">
+                <button 
+                  onClick={handleAddToCart}
+                  className="flex-1 bg-pink-500 text-white py-3 px-6 rounded-lg hover:bg-pink-600 transition-colors"
+                >
                   Add to basket
                 </button>
               </div>

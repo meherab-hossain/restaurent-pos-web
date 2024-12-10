@@ -22,6 +22,7 @@ const DashboardPage = () => {
   const categoriesData = useAppSelector((state) => state.menu.categories);
   const [activeCategory, setActiveCategory] = useState<number | null>(null);
   const [cart, setCart] = useState([]);
+  const [selectedMenuItem, setSelectedMenuItem] = useState<any>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const categoriesRef = useRef(null);
   const [userType, setUserType] = useState<string | null>(null);
@@ -211,7 +212,7 @@ const DashboardPage = () => {
     <>
       <MenuItemSelectModal
         modalStatus={modals[MODAL_NAMES.PRODUCT_ENTRY].isOpen}
-        data={modals[MODAL_NAMES.PRODUCT_ENTRY].data}
+        data={selectedMenuItem}
         modalOnClose={() => closeModal(MODAL_NAMES.PRODUCT_ENTRY)}
         // modalOnEmit={handleProductSubmit}
       />
@@ -255,7 +256,6 @@ const DashboardPage = () => {
               key={category?.id}
               id={category?.id}
               className="menu-section space-y-4"
-              onClick={() => openModal(MODAL_NAMES.PRODUCT_ENTRY)}
             >
               <h2 className="text-2xl font-bold flex items-center space-x-2">
                 <span>{category?.name}</span>
@@ -267,6 +267,12 @@ const DashboardPage = () => {
                     <div
                       key={item?.id}
                       className="bg-white border transition-transform duration-300 ease-in hover:scale-105 hover:bg-[#fdf2f7] rounded-xl shadow-sm p-4 flex gap-2 justify-between items-start"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setSelectedMenuItem(item);
+                        openModal(MODAL_NAMES.PRODUCT_ENTRY);
+                      }}
                     >
                       <div className="space-y-1 box-border w-[75%]">
                         <h2 className="text-lg font-semibold text-gray-900">

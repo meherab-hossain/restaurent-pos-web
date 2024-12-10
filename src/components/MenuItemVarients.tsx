@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-const MenuItemVarients = () => {
+const MenuItemVarients = ({varients}: any) => {
   return (
     <div className="mb-8  border bg-[#fdf2f7] rounded-lg p-2">
       <div className="flex items-center justify-between">
