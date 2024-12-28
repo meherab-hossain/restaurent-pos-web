@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { addToCart } from '@/store/feature/menuSlice';
+import { addToCart, updateCartItemQuantity } from '@/store/feature/menuSlice';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from 'react';
-import FrequentlyBrought from "./FrequentlyBrought";
 import MenuItemAddOns from "./MenuItemAddOns";
 import MenuItemVarients from "./MenuItemVarients";
 
@@ -25,23 +24,62 @@ const MenuItemSelectModal = ({
 }: ModalProps) => {
   const dispatch = useAppDispatch();
   const [quantity, setQuantity] = useState(1);
-
-  const menuItem = useAppSelector((state) => state.menu.cart);
+  const [selectedVariant, setSelectedVariant] = useState<any>(null);
+  const [selectedAddons, setSelectedAddons] = useState<Array<{
+    id: number;
+    name: string;
+    price: string;
+  }>>([]);
+  const cart = useAppSelector((state) => state.menu.cart);
 
   // Add useEffect to reset quantity when modal opens/closes
   useEffect(() => {
     if (!modalStatus) {
       // Reset quantity when modal closes
       setQuantity(1);
+      setSelectedVariant(null);
+      setSelectedAddons([]);
     }
   }, [modalStatus]);
+
   const handleAddToCart = () => {
-    dispatch(addToCart({
-      menu_item_id: data.id,
-      quantity: quantity,
-      addons: [],
-      variant_id: 0
-    }));
+    if (!selectedVariant) {
+      alert('Please select a variant first');
+      return;
+    }
+
+    const existingCartItem = cart.find(item => {
+      const basicMatch = item.menu_item_id === data.id && 
+                        item.variant.id === selectedVariant.id;
+      
+      const addonsMatch = 
+        item.addons.length === selectedAddons.length &&
+        item.addons.every(itemAddon => 
+          selectedAddons.some(addon => addon.id === itemAddon.id)
+        );
+
+      return basicMatch && addonsMatch;
+    });
+
+    if (existingCartItem) {
+      dispatch(updateCartItemQuantity({
+        menu_item_id: data.id,
+        variant: selectedVariant,
+        quantity: existingCartItem.quantity + quantity
+      }));
+    } else {
+      dispatch(addToCart({
+        menu_item_id: data.id,
+        menu_item_name: data.name,
+        quantity: quantity,
+        variant: {
+          id: selectedVariant.id,
+          name: selectedVariant.name,
+          price: selectedVariant.price
+        },
+        addons: selectedAddons
+      }));
+    }
     modalOnClose();
   };
 
@@ -77,14 +115,22 @@ const MenuItemSelectModal = ({
                 <h1 className="text-2xl font-bold mb-2">{data?.name}</h1>
                 <p className="text-xl text-gray-700 mb-6">₹{data?.price}</p>
                 {/*  menue variants */}
-                <MenuItemVarients varients={data?.varients}/>
+                <MenuItemVarients 
+                  selectedMenuData={data} 
+                  onVariantSelect={setSelectedVariant} 
+                />
 
-                {/* Add ons */}
-                <MenuItemAddOns />
+                {selectedVariant && (
+                  <MenuItemAddOns 
+                    selectedMenuData={data} 
+                    onAddonsChange={setSelectedAddons}
+                    selectedAddons={selectedAddons}
+                  />
+                )}
                 {/*  frequently bought together */}
-                <FrequentlyBrought />
+                {/* <FrequentlyBrought /> */}
                 {/* special instructions */}
-                <div className="mb-8">
+                {/* <div className="mb-8">
                   <h2 className="text-lg font-semibold mb-3">
                     Special instructions
                   </h2>
@@ -93,10 +139,10 @@ const MenuItemSelectModal = ({
                     rows={3}
                     placeholder="Special instructions are subject to the restaurant's approval. Tell us here."
                   />
-                </div>
+                </div> */}
 
                 {/* if this item is not available */}
-                <div className="mb-8">
+                {/* <div className="mb-8">
                   <h2 className="text-lg font-semibold mb-3">
                     If this item is not available
                   </h2>
@@ -108,7 +154,7 @@ const MenuItemSelectModal = ({
                     <option>Call me and let me know</option>
                   </select>
                 </div>
-              </div>
+              </div> */}
 
               <div className="flex justify-end gap-3 shadow px-6 py-4">
                 <div className="flex items-center border border-gray-300 rounded-lg">
@@ -134,6 +180,7 @@ const MenuItemSelectModal = ({
                   Add to basket
                 </button>
               </div>
+            </div>
             </div>
           </DialogPanel>
         </div>

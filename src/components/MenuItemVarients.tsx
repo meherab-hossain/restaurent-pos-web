@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-const MenuItemVarients = ({varients}: any) => {
+const MenuItemVarients = ({selectedMenuData, onVariantSelect}: any) => {
   return (
     <div className="mb-8  border bg-[#fdf2f7] rounded-lg p-2">
       <div className="flex items-center justify-between">
@@ -10,23 +10,24 @@ const MenuItemVarients = ({varients}: any) => {
       </div>
 
       <div className="space-y-3">
-        {["Small", "Medium", "Large"].map((size) => (
+        {selectedMenuData?.variants && selectedMenuData?.variants?.map((item: any) => (
           <label
-            key={size}
+            key={item}
             className="flex items-center justify-between gap-3 py-3 hover:bg-pink-200 rounded-lg px-2"
           >
             <div className="flex gap-2 items-center">
               <input
                 type="radio"
-                name="size"
-                value={size}
+                name="item"
+                value={item}
                 className="w-4 h-4 text-pink-500 focus:ring-pink-500"
+                onChange={() => onVariantSelect(item)}
               />
-              <span className="text-gray-700">{size}</span>
+              <span className="text-gray-700">{item?.name}</span>
             </div>
             <span className="ml-auto text-gray-600">
               ₹{" "}
-              {size === "Small" ? "875" : size === "Medium" ? "1,050" : "1,400"}
+              {item?.price}
             </span>
           </label>
         ))}

@@ -35,12 +35,18 @@ interface Category {
 
 interface CartItem {
   menu_item_id: number;
+  menu_item_name: string;
   quantity: number;
+  variant: {
+    id: number;
+    name: string;
+    price: string;
+  };
   addons: Array<{
-    addon_id: number;
-    variant_id: number;
+    id: number;
+    name: string;
+    price: string;
   }>;
-  variant_id: number;
 }
 
 interface MenuState {
@@ -70,8 +76,19 @@ const menuSlice = createSlice({
     removeFromCart: (state, action: PayloadAction<number>) => {
       state.cart = state.cart.filter(item => item.menu_item_id !== action.payload);
     },
-    updateCartItemQuantity: (state, action: PayloadAction<{ menu_item_id: number; quantity: number }>) => {
-      const item = state.cart.find(item => item.menu_item_id === action.payload.menu_item_id);
+    updateCartItemQuantity: (state, action: PayloadAction<{ 
+      menu_item_id: number; 
+      variant: {
+        id: number;
+        name: string;
+        price: string;
+      };
+      quantity: number 
+    }>) => {
+      const item = state.cart.find(item => 
+        item.menu_item_id === action.payload.menu_item_id && 
+        item.variant.id === action.payload.variant.id
+      );
       if (item) {
         item.quantity = action.payload.quantity;
       }
