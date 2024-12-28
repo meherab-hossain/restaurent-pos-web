@@ -8,7 +8,6 @@ import MenuItemSelectModal from "@/components/MenuItemSelectModal";
 import { setCategories } from "@/store/feature/menuSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { MODAL_NAMES } from "@/utils/constants";
-import cookies from "@/utils/cookies";
 import { http } from "@/utils/http";
 import { useModalManager } from "@/utils/modal/useModalManager";
 import { Plus, Search } from "lucide-react";
@@ -21,15 +20,14 @@ import Pizza from "./../../../public/images/pizza.jpg";
 const DashboardPage = () => {
   const categoriesData = useAppSelector((state) => state.menu.categories);
   const [activeCategory, setActiveCategory] = useState<number | null>(null);
-  const [cart, setCart] = useState([]);
+
   const [selectedMenuItem, setSelectedMenuItem] = useState<any>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const categoriesRef = useRef(null);
-  const [userType, setUserType] = useState<string | null>(null);
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isProgrammaticScroll, setIsProgrammaticScroll] = useState(false);
-
+  const cartItem = useAppSelector((state) => state.menu.cart);
   // modal states
   const { modals, openModal, closeModal } = useModalManager(
     Object.values(MODAL_NAMES)
@@ -45,10 +43,6 @@ const DashboardPage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
-    const userTypeFromCookie = cookies.get("user_type");
-    setUserType(userTypeFromCookie);
-  }, []);
 
   useEffect(() => {
     fetchCategories();
@@ -68,66 +62,7 @@ const DashboardPage = () => {
       });
   }
 
-  const categories = [
-    { id: "popular", name: "Popular", count: 6 },
-    { id: "combo", name: "Combo", count: 2 },
-    { id: "pizza", name: "Pizza", count: 12 },
-    { id: "burger", name: "Burger", count: 8 },
-    { id: "snacks", name: "Snacks", count: 3 },
-    { id: "set-menu", name: "Set Menu", count: 4 },
-    { id: "milkshake", name: "Milkshake", count: 3 },
-    { id: "mocktail", name: "Mocktail", count: 6 },
-    { id: "coffee", name: "Coffee", count: 5 },
-  ];
-
-  const menuItems = [
-    {
-      id: 1,
-      name: "BBQ Meat Machine Pizza",
-      price: 335,
-      description:
-        "Topped with beef & chicken both with freshly cut vegetables, cheese & in a...",
-      category: "popular",
-    },
-    {
-      id: 2,
-      name: "Sausage Carnival Pizza",
-      price: 335,
-      description: "Big Big Sausage, Mushroom, Spice.",
-      category: "popular",
-    },
-    {
-      id: 3,
-      name: "BBQ Meat Machine Pizza",
-      price: 335,
-      description:
-        "Topped with beef & chicken both with freshly cut vegetables, cheese & in a...",
-      category: "combo",
-    },
-    {
-      id: 4,
-      name: "Sausage Carnival Pizza",
-      price: 335,
-      description: "Big Big Sausage, Mushroom, Spice.",
-      category: "pizza",
-    },
-    {
-      id: 5,
-      name: "BBQ Meat Machine Pizza",
-      price: 335,
-      description:
-        "Topped with beef & chicken both with freshly cut vegetables, cheese & in a...",
-      category: "burger",
-    },
-    {
-      id: 6,
-      name: "Sausage Carnival Pizza",
-      price: 335,
-      description: "Big Big Sausage, Mushroom, Spice.",
-      category: "snacks",
-    },
-    // Add more menu items here
-  ];
+  
   const scrollToCategory = (categoryId: number) => {
     const section = document.getElementById(categoryId.toString());
     if (section) {
@@ -208,6 +143,10 @@ const DashboardPage = () => {
     };
   }, [isProgrammaticScroll]);
 
+  function getMenuItemCountInCart(menuItemId: number) {
+    return cartItem.find((item) => item.menu_item_id === menuItemId)?.quantity;
+  }
+
   return (
     <>
       <MenuItemSelectModal
@@ -266,7 +205,7 @@ const DashboardPage = () => {
                   .map((item:any) => (
                     <div
                       key={item?.id}
-                      className="bg-white border transition-transform duration-300 ease-in hover:scale-105 hover:bg-[#fdf2f7] rounded-xl shadow-sm p-4 flex gap-2 justify-between items-start"
+                      className="bg-white cursor-pointer border transition-transform duration-300 ease-in hover:scale-105 hover:bg-[#fdf2f7] rounded-xl shadow-sm p-4 flex gap-2 justify-between items-start"
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -291,7 +230,9 @@ const DashboardPage = () => {
                           className="w-24 h-24 rounded-lg object-cover"
                         />
                         <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-white text-sm">
+                          {getMenuItemCountInCart(item?.id) || 
                           <Plus />
+                        }
                         </div>
                       </div>
                     </div>
