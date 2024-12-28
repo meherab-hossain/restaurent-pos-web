@@ -1,9 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // LoginForm.tsx
 import LogoHeader from "@/components/common/LogoHeader";
+import cookies from "@/utils/cookies";
+import { http } from "@/utils/http";
+import { ButtonSpinnerSvg } from "@/utils/icons";
 import { yupResolver } from "@hookform/resolvers/yup";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "react-hot-toast";
 import LoginSchema from "../../utils/yup/LoginSchema";
 
 interface LoginFormData {
@@ -13,11 +19,12 @@ interface LoginFormData {
 
 const LoginPage = () => {
   const router = useRouter();
+  const [processing, setProcessing] = useState(false);
+  const [serverError, setServerError] = useState({} as any);
   const {
     register,
     handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<LoginFormData>({
     mode: "onChange",
     resolver: yupResolver(LoginSchema),
@@ -27,22 +34,61 @@ const LoginPage = () => {
     },
   });
 
-  const onSubmit = async (data: LoginFormData) => {
-    try {
-      // Here you would typically make an API call
-      console.log("Form data:", data);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const onSubmit = (data: LoginFormData) => {
+    const formData = {
+      email: data.email,
+      password: data.password,
+    };
+    setProcessing(true);
 
-      // Reset form after successful submission
-      reset();
-      router.push("/dashboard");
-      // Show success message (you might want to handle this with a toast notification)
-      // alert("Login successfully!");
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      alert("Error submitting form. Please try again.");
-    }
+    http
+      .post("/login", formData)
+      .then((res: any) => {
+        console.log('Login response:', res);
+
+        if (!res?.data?.accessToken || !res?.data?.user) {
+          throw new Error('Invalid response format');
+        }
+
+        const { user, accessToken } = res.data;
+        
+        const cookieOptions = {
+          path: '/',
+          secure: true,
+          sameSite: 'strict'
+        };
+
+        cookies.set("access_token", accessToken, cookieOptions);
+        cookies.set("user", JSON.stringify(user), cookieOptions);
+
+        toast.success("Login successful", {
+          duration: 3000,
+        });
+
+        router.push("/dashboard");
+      })
+      .catch((err: any) => {
+        console.error("Login error details:", {
+          response: err?.response,
+          data: err?.response?.data,
+          message: err?.message
+        });
+
+        setServerError(err?.response?.data?.errors || {});
+        
+        const errorMessage = err?.response?.data?.message 
+          || err?.message 
+          || "Login failed. Please try again.";
+        
+        toast.error(errorMessage, {
+          duration: 3000,
+        });
+      })
+      .finally(() => {
+        setProcessing(false);
+      });
   };
-
   return (
     <div className="h-screen flex justify-center items-center">
       <div className="min-w-[300px] max-w-2xl border m-2 md:mx-auto p-6 bg-white rounded-lg shadow">
@@ -63,13 +109,13 @@ const LoginPage = () => {
                 {...register("email")}
                 type="email"
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none ${
-                  errors.email ? "border-red-500" : "border-gray-300"
+                  errors.email || serverError?.["email"] ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="Enter email"
               />
-              {errors.email && (
+              {(errors.email || serverError?.["email"]) && (
                 <p className="mt-1 text-sm text-red-500">
-                  {errors?.email.message}
+                  {errors?.email?.message || serverError?.["email"]}
                 </p>
               )}
             </div>
@@ -83,27 +129,34 @@ const LoginPage = () => {
                 {...register("password")}
                 type="password"
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none ${
-                  errors.password ? "border-red-500" : "border-gray-300"
+                  errors.password || serverError?.["password"] ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="Enter password"
               />
-              {errors.password && (
+              {(errors.password || serverError?.["password"]) && (
                 <p className="mt-1 text-sm text-red-500">
-                  {errors.password.message}
+                  {errors?.password?.message || serverError?.["password"]}
                 </p>
               )}
             </div>
           </div>
 
           <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`w-full bg-[#12233A] text-white py-2 px-4 rounded-md hover:opacity-90 focus:outline-none  ${
-              isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
-            {isSubmitting ? "Processing..." : "Login"}
-          </button>
+              type="submit"
+              disabled={processing}
+              className={`w-full bg-[#12233A] text-white py-2 px-4 rounded-md hover:opacity-90 focus:outline-none  ${
+                processing ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              {processing ? (
+                <div className="flex items-center justify-center gap-2">
+                  <ButtonSpinnerSvg />
+                  Processing...
+                </div>
+              ) : (
+                "Login"
+              )}
+            </button>
         </form>
         <p className="text-center mt-4">
           New User?{" "}

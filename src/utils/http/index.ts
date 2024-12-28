@@ -5,9 +5,17 @@ import axios, { AxiosInstance } from 'axios';
 const http: AxiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   headers: {
-    'Authorization': `Bearer ${cookies.get('token')}`,
     'Content-Type': 'application/json',
   }
+});
+
+// Add request interceptor to dynamically add the token
+http.interceptors.request.use((config) => {
+  const token = cookies.get('access_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 // Admin api instance
