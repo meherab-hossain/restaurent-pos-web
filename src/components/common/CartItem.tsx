@@ -5,7 +5,7 @@ import {
 } from "@/store/feature/menuSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { RootState } from "@/store/store";
-import { Plus, Trash } from "lucide-react";
+import { Minus, Plus, Trash } from "lucide-react";
 import Image from "next/image";
 
 const CartItem = () => {
@@ -26,7 +26,7 @@ const CartItem = () => {
   const calculateItemPrice = (item: any, cartItem: any) => {
     // Base price from variant
     let total = parseFloat(cartItem.variant.price) * cartItem.quantity;
-    
+
     // Add prices of all addons
     if (cartItem.addons?.length > 0) {
       const addonsTotal = cartItem.addons.reduce((sum: number, addon: any) => {
@@ -34,7 +34,7 @@ const CartItem = () => {
       }, 0);
       total += addonsTotal * cartItem.quantity;
     }
-    
+
     return total;
   };
 
@@ -79,7 +79,9 @@ const CartItem = () => {
                         {cartItem?.variant?.name}
                       </div>
                       <div className="mt-1 text-gray-500 font-light">
-                        {cartItem?.addons?.map((addon: any) => addon.name).join(", ")}
+                        {cartItem?.addons
+                          ?.map((addon: any) => addon.name)
+                          .join(", ")}
                       </div>
                       <div className="mt-1 font-medium">
                         Tk {calculateItemPrice(item, cartItem)}
@@ -88,14 +90,36 @@ const CartItem = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 bg-gray-50 rounded-full px-3 py-1">
-                  <button
-                    className="p-1 hover:bg-gray-200 rounded-full"
-                    onClick={() =>
-                      dispatch(removeFromCart(cartItem.menu_item_id))
-                    }
-                  >
-                    <Trash size={16} />
-                  </button>
+                  {cartItem.quantity <= 1 ? (
+                    <button
+                      className="p-1 hover:bg-gray-200 rounded-full"
+                      onClick={() =>
+                        dispatch(removeFromCart({
+                          menu_item_id: cartItem.menu_item_id,
+                          variant_id: cartItem.variant.id,
+                          addons: cartItem.addons
+                        }))
+                      }
+                    >
+                      <Trash size={16} />
+                    </button>
+                  ) : (
+                    <button
+                      className="p-1 hover:bg-gray-200 rounded-full"
+                      onClick={() =>
+                        dispatch(
+                          updateCartItemQuantity({
+                            menu_item_id: cartItem.menu_item_id,
+                            variant: cartItem.variant,
+                            quantity: cartItem.quantity - 1,
+                          })
+                        )
+                      }
+                    >
+                      <Minus size={16} />
+                    </button>
+                  )}
+
                   <span className="w-4 text-center">{cartItem.quantity}</span>
                   <button
                     className="p-1 hover:bg-gray-200 rounded-full"

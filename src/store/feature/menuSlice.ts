@@ -73,8 +73,27 @@ const menuSlice = createSlice({
     addToCart: (state, action: PayloadAction<CartItem>) => {
       state.cart.push(action.payload);
     },
-    removeFromCart: (state, action: PayloadAction<number>) => {
-      state.cart = state.cart.filter(item => item.menu_item_id !== action.payload);
+    removeFromCart: (state, action: PayloadAction<{
+      menu_item_id: number;
+      variant_id: number;
+      addons?: Array<{ id: number; name: string; price: string; }>;
+    }>) => {
+      state.cart = state.cart.filter(item => {
+        if (!action.payload.addons) {
+          return !(item.menu_item_id === action.payload.menu_item_id && 
+                  item.variant.id === action.payload.variant_id);
+        }
+
+        const addonsMatch = 
+          item.addons.length === action.payload.addons.length &&
+          item.addons.every(itemAddon => 
+            action.payload.addons?.some(addon => addon.id === itemAddon.id)
+          );
+
+        return !(item.menu_item_id === action.payload.menu_item_id && 
+                item.variant.id === action.payload.variant_id &&
+                addonsMatch);
+      });
     },
     updateCartItemQuantity: (state, action: PayloadAction<{ 
       menu_item_id: number; 
